@@ -33,6 +33,7 @@ paths:
           description: Invalid Fields
         '500':
           description: Internal Server Error
+
   /user/signup:
     post:
       tags:
@@ -57,6 +58,7 @@ paths:
           description: Invalid Fields
         '500':
           description: Internal Server Error
+
   /user/profile:
     get:
       security:
@@ -65,11 +67,9 @@ paths:
         - User Module
       summary: User Profile API
       description: API for fetching a user profile
-      #produces:
-       # - application/json
       responses:
         '200':
-          description: User profile retrieved successully
+          description: User profile retrieved successfully
           schema:
             $ref: '#/definitions/ApiResponse'
         '400':
@@ -94,20 +94,96 @@ paths:
         - application/json
       responses:
         '200':
-          description: User profile retrieved successully
+          description: User profile updated successfully
           schema:
             $ref: '#/definitions/ApiResponse'
         '400':
           description: Invalid Fields
         '500':
           description: Internal Server Error
+# Route pour récupérer toutes les transactions pour le mois en cours, groupées par compte
+  /transactions:
+    get:
+      tags:
+        - Transactions Module
+      summary: Get transactions by account for the current month
+      description: API to fetch all transactions for the current month, grouped by account.
+      parameters:
+        - in: query
+          name: accountId
+          description: The ID of the account for which the transactions are requested
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully fetched transactions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Transaction'
+        '400':
+          description: Invalid account ID or missing parameters
+        '500':
+          description: Internal Server Error
+# Route pour récupérer les détails d'une transaction spécifique
+  /transactions/{transactionId}:
+    get:
+      tags:
+        - Transactions Module
+      summary: Get details of a specific transaction
+      description: API to fetch detailed information of a specific transaction.
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          description: The ID of the transaction to fetch details for
+          type: string
+      responses:
+        '200':
+          description: Successfully fetched transaction details
+          schema:
+            $ref: '#/definitions/Transaction'
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal Server Error
+# Route pour mettre à jour une transaction (uniquement modifier, pas ajouter ou supprimer)          
+    put:
+      tags:
+        - Transactions Module
+      summary: Update an existing transaction
+      description: API to update transaction details (like category, amount, description).
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          description: The ID of the transaction to update
+          type: string
+        - in: body
+          name: body
+          description: New details for the transaction
+          required: true
+          schema:
+            $ref: '#/definitions/TransactionUpdate'
+      responses:
+        '200':
+          description: Successfully updated transaction
+        '400':
+          description: Invalid request data or invalid transaction ID
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal Server Error
+
 securityDefinitions:
   Bearer:
     type: apiKey
     name: Authorization
     in: header
+
 definitions:
   User:
+    type: object
     properties:
       email:
         type: string
@@ -124,7 +200,9 @@ definitions:
       userName:
         type: string
         description: user public name
+
   Login:
+    type: object
     properties:
       email:
         type: string
@@ -132,6 +210,7 @@ definitions:
       password:
         type: string
         description: user password
+
   ApiResponse:
     type: object
     properties:
@@ -146,13 +225,44 @@ definitions:
             type: string
           email:
             type: string
+
   LoginResponse:
     type: object
     properties:
       token:
         type: string
+
   UserProfile:
     type: object
     properties:
       userName:
+        type: string
+
+  Transaction:
+    type: object
+    properties:
+      id:
+        type: string
+      accountId:
+        type: string
+      date:
+        type: string
+        format: date
+      amount:
+        type: number
+        format: float
+      category:
+        type: string
+      description:
+        type: string
+
+  TransactionUpdate:
+    type: object
+    properties:
+      category:
+        type: string
+      amount:
+        type: number
+        format: float
+      description:
         type: string
